@@ -682,7 +682,7 @@ msgstr "So leghende"
 #: book_providers/standard_ebooks_read_button.html:15 books/edit/edition.html:665
 #: books/show.html:34 trending.html:23 type/list/embed.html:69 widget.html:34
 msgid "Read"
-msgstr "Lèghidu"
+msgstr "Leghe"
 
 #: trending.html:24
 #, python-format
@@ -692,7 +692,7 @@ msgstr "Calicunu l'at marcadu comente %(shelf)s %(k_hours_ago)s"
 #: trending.html:26
 #, python-format
 msgid "Logged %(count)i times %(time_unit)s"
-msgstr "Intradu %(count)i bortas %(time_unit)s"
+msgstr "Atzessu fatu %(count)i bortas %(time_unit)s"
 
 #: viewpage.html:13
 msgid "Revert to this revision?"
