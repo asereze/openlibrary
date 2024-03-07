@@ -5274,6 +5274,10 @@ msgstr[1] "%(n)s àteros"
 msgid "by an <em>unknown author</em>"
 msgstr "de un'<em>autore disconnotu</em>"
 
+#: BookPreview.html:12
+msgid "Only"
+msgstr "ebbia"
+
 #: BookPreview.html:19
 msgid "Preview Book"
 msgstr "Abbista un'anteprima de su libru"
@@ -5454,6 +5458,13 @@ msgstr "Torra su libru"
 msgid "in <a class=\"hoverlink\" title=\"%(langs)s\">1 language</a>"
 msgid_plural "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d languages</a>"
 msgstr[0] "in <a class=\"hoverlink\" title=\"%(langs)s\">1 limba</a>"
+msgstr[1] "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d limbas</a>"
+
+#: SearchResultsWork.html:90
+#, python-format
+msgid "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d language</a>"
+msgid_plural "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d languages</a>"
+msgstr[0] "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d limba</a>"
 msgstr[1] "in <a class=\"hoverlink\" title=\"%(langs)s\">%(count)d limbas</a>"
 
 #: SearchResultsWork.html:92
