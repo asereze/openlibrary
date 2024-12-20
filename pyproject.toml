@@ -13,7 +13,7 @@ skip-string-normalization = true
 target-version = ["py311"]
 
 [tool.codespell]
-ignore-words-list = "beng,curren,datas,furst,nd,nin,ot,ser,spects,te,tha,ue,upto"
+ignore-words-list = "beng,curren,datas,furst,nd,nin,ot,ser,spects,te,tha,ue,upto,thirdparty"
 skip = "./.*,*/ocm00400866,*/read_toc.py,*.it,*.js,*.json,*.mrc,*.page,*.pg_dump,*.po,*.txt,*.xml,*.yml"
 
 [tool.mypy]
@@ -35,6 +35,7 @@ ignore_errors = true
 asyncio_mode = "strict"
 
 [tool.ruff]
+target-version = "py312"
 extend-exclude = [
   "./.*",
   "vendor",
@@ -45,9 +46,7 @@ ignore = [
   "B904",
   "B905",
   "E402",
-  "F401",
   "F841",
-  "I",
   "PERF401",
   "PIE790",
   "PLC1901",
@@ -60,7 +59,6 @@ ignore = [
   "PT021",
   "RSE102",
   "RUF001",
-  "RUF002",
   "RUF005",
   "RUF012",
   "RUF100",
@@ -130,7 +128,6 @@ select = [
   # "TID",   # flake8-tidy-imports
   # "TRY",   # tryceratops
 ]
-target-version = "py311"
 
 [tool.ruff.mccabe]
 max-complexity = 28
@@ -188,7 +185,5 @@ max-statements = 70
 "scripts/manage-imports.py" = ["BLE001"]
 "scripts/sitemaps/sitemap.py" = ["BLE001"]
 "scripts/solr_builder/solr_builder/solr_builder.py" = ["PYI024", "PLR0913"]
+"scripts/tests/test_obfi.py" = ["E501"]
 "tests/*" = ["S101"]
-"tests/integration/__init__.py" = ["E722"]
-"tests/integration/test_loans.py" = ["E722"]
-

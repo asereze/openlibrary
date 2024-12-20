@@ -6,6 +6,8 @@ import '../../../../../static/css/components/carousel--js.less';
  * @typedef {Object} CarouselConfig
  * @property {[number, number, number, number, number, number]} booksPerBreakpoint
  *      number of books to show at: [default, >1200px, >1024px, >600px, >480px, >360px]
+ * @property {String} analyticsCategory
+ * @property {String} carouselKey
  * @property {Object} [loadMore] configuration for loading more items
  * @property {String} loadMore.url to use to load more items
  * @property {Number} loadMore.limit of new items to receive
@@ -24,7 +26,14 @@ export class Carousel {
      */
     constructor($container) {
         /** @type {CarouselConfig} */
-        this.config = JSON.parse($container.attr('data-config'));
+        this.config = Object.assign(
+            {
+                booksPerBreakpoint: [6, 5, 4, 3, 2, 1],
+                analyticsCategory: 'Carousel',
+                carouselKey: '',
+            },
+            JSON.parse($container.attr('data-config'))
+        );
 
         /** @type {CarouselConfig['loadMore']} */
         this.loadMore = Object.assign(
@@ -42,14 +51,18 @@ export class Carousel {
         this.$container = $container;
 
         //This loads in i18n strings from a hidden input element, generated in the books/custom_carousel.html template.
-        this.i18n = JSON.parse($('input[name="carousel-i18n-strings"]').attr('value'));
-        this.availabilityStatuses = {
-            open: {cls: 'cta-btn--available', cta: this.i18n['open']},
-            borrow_available: {cls: 'cta-btn--available', cta: this.i18n['borrow_available']},
-            borrow_unavailable: {cls: 'cta-btn--unavailable', cta: this.i18n['borrow_unavailable']},
-            error: {cls: 'cta-btn--missing', cta: this.i18n['error']},
-            // private: {cls: 'cta-btn--available', cta: 'Preview'}
-        };
+        const i18nInput = document.querySelector('input[name="carousel-i18n-strings"]')
+        if (i18nInput) {
+            this.i18n = JSON.parse(i18nInput.value);
+
+            this.availabilityStatuses = {
+                open: {cls: 'cta-btn--available', cta: this.i18n['open']},
+                borrow_available: {cls: 'cta-btn--available', cta: this.i18n['borrow_available']},
+                borrow_unavailable: {cls: 'cta-btn--unavailable', cta: this.i18n['borrow_unavailable']},
+                error: {cls: 'cta-btn--missing', cta: this.i18n['error']},
+                // private: {cls: 'cta-btn--available', cta: 'Preview'}
+            };
+        }
     }
 
     get slick() {
@@ -71,6 +84,29 @@ export class Carousel {
                         infinite: false,
                     }
                 }))
+        });
+
+        // Slick internally changes the click handlers on the next/prev buttons,
+        // so we listen via the container instead
+        this.$container.on('click', '.slick-next', (ev) => {
+            // Note: This will actually fail on the last 'next', but that's okay
+            if ($(ev.target).hasClass('slick-disabled')) return;
+
+            window.archive_analytics.ol_send_event_ping({
+                category: this.config.analyticsCategory,
+                action: 'Next',
+                label: this.config.carouselKey,
+            });
+        });
+
+        this.$container.on('swipe', (ev, _slick, direction) => {
+            if (direction === 'left') {
+                window.archive_analytics.ol_send_event_ping({
+                    category: this.config.analyticsCategory,
+                    action: 'Next',
+                    label: this.config.carouselKey,
+                });
+            }
         });
 
         // if a loadMore config is provided and it has a (required) url
@@ -163,10 +199,7 @@ export class Carousel {
                     </a>
                 </div>
                 <div class="book-cta">
-                    <a class="btn cta-btn ${cls}"
-                       data-ol-link-track="subjects"
-                       data-key="subjects"
-                   >${cta}</a>
+                    <a class="btn cta-btn ${cls}">${cta}</a>
                 </div>
             </div>`);
         $el.find('.bookcover').attr('title', work.title);
@@ -174,19 +207,25 @@ export class Carousel {
             .attr('title', `${cta}: ${work.title}`)
             .attr('data-ocaid', ocaid)
             .attr('href', url);
+
+        $el.find('.book-cover a')
+            .attr('data-ol-link-track', `${this.config.analyticsCategory}|CoverClick|${this.config.carouselKey}`);
+        $el.find('.cta-btn')
+            .attr('data-ol-link-track', `${this.config.analyticsCategory}|CTAClick|${this.config.carouselKey}`);
         return $el;
     }
 
-    fetchMore(extraParams = {}) {
+    fetchMore() {
         const loadMore = this.loadMore;
         // update the current page or offset within the URL
         const url = loadMore.url.startsWith('/') ? new URL(location.origin + loadMore.url) : new URL(loadMore.url);
         url.searchParams.set('limit', loadMore.limit);
         url.searchParams.set(loadMore.pageMode, loadMore.page);
-
+        //set extraParams
         for (const key in loadMore.extraParams) {
-            url.searchParams.set(key, extraParams[key]);
+            url.searchParams.set(key, loadMore.extraParams[key]);
         }
+
 
         this.appendLoadingSlide();
         $.ajax({ url: url, type: 'GET' })
@@ -200,6 +239,7 @@ export class Carousel {
                 loadMore.locked = false;
             });
     }
+
 
     clearCarousel() {
         this.slick.removeSlide(this.slick.$slides.length, true, true);

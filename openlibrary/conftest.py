@@ -1,17 +1,21 @@
 """pytest configuration for openlibrary
 """
+
 import pytest
 import web
 
 from infogami.infobase.tests.pytest_wildcard import Wildcard
 from infogami.utils import template
 from infogami.utils.view import render_template as infobase_render_template
-from openlibrary.i18n import gettext
 from openlibrary.core import helpers
-
-from openlibrary.mocks.mock_infobase import mock_site
-from openlibrary.mocks.mock_ia import mock_ia
-from openlibrary.mocks.mock_memcache import mock_memcache
+from openlibrary.i18n import gettext
+from openlibrary.mocks.mock_ia import mock_ia  # noqa: F401 side effects may be needed
+from openlibrary.mocks.mock_infobase import (
+    mock_site,  # noqa: F401 side effects may be needed
+)
+from openlibrary.mocks.mock_memcache import (
+    mock_memcache,  # noqa: F401 side effects may be needed
+)
 
 
 @pytest.fixture(autouse=True)
@@ -43,7 +47,7 @@ def no_sleep(monkeypatch):
     monkeypatch.setattr("time.sleep", mock_sleep)
 
 
-@pytest.fixture()
+@pytest.fixture
 def monkeytime(monkeypatch):
     cur_time = 1
 
@@ -58,12 +62,12 @@ def monkeytime(monkeypatch):
     monkeypatch.setattr("time.sleep", sleep)
 
 
-@pytest.fixture()
+@pytest.fixture
 def wildcard():
     return Wildcard()
 
 
-@pytest.fixture()
+@pytest.fixture
 def render_template(request):
     """Utility to test templates."""
     template.load_templates("openlibrary")

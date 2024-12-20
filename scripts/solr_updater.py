@@ -6,27 +6,25 @@ Changes:
 2013-02-25: First version
 2018-02-11: Use newer config method
 """
+
 import asyncio
 import datetime
 import json
 import logging
-from pathlib import Path
 import re
 import socket
 import sys
 import urllib
-
-from typing import Union
 from collections.abc import Iterator
+from pathlib import Path
 
-import _init_path  # Imported for its side effect of setting PYTHONPATH
-
+import _init_path  # noqa: F401 Imported for its side effect of setting PYTHONPATH
 import aiofiles
 import web
 
-from openlibrary.solr import update
-from openlibrary.config import load_config
 from infogami import config
+from openlibrary.config import load_config
+from openlibrary.solr import update
 from openlibrary.utils.open_syllabus_project import set_osp_dump_location
 
 logger = logging.getLogger("openlibrary.solr-updater")
@@ -221,11 +219,7 @@ async def update_keys(keys):
     logger.debug("Args: %s" % str(args))
     update.load_configs(args['ol_url'], args['ol_config'], 'default')
 
-    keys = [
-        k
-        for k in keys
-        if k.count("/") == 2 and k.split("/")[1] in ("books", "authors", "works")
-    ]
+    keys = [k for k in keys if update.can_update_key(k)]
 
     count = 0
     for chunk in web.group(keys, 100):
@@ -267,12 +261,12 @@ async def main(
     logger.info("BEGIN solr_updater")
 
     if debugger:
-        import debugpy
+        import debugpy  # noqa: T100
 
         logger.info("Enabling debugger attachment (attach if it hangs here)")
-        debugpy.listen(address=('0.0.0.0', 3000))
+        debugpy.listen(address=('0.0.0.0', 3000))  # noqa: T100
         logger.info("Waiting for debugger to attach...")
-        debugpy.wait_for_client()
+        debugpy.wait_for_client()  # noqa: T100
         logger.info("Debugger attached to port 3000")
 
     # Sometimes archive.org requests blocks forever.

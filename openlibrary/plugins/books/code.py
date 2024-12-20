@@ -4,11 +4,11 @@
 import json
 import re
 import urllib
+
 import web
 
-from infogami.utils import delegate
 from infogami.plugins.api.code import jsonapi
-
+from infogami.utils import delegate
 from openlibrary.plugins.books import dynlinks, readlinks
 
 
@@ -42,10 +42,10 @@ class books_json(delegate.page):
 
     @jsonapi
     def GET(self):
-        i = web.input(bibkeys='', callback=None, details="false", high_priority="false")
+        i = web.input(bibkeys='', callback=None, details="false", high_priority=False)
+        i.high_priority = i.get("high_priority") == "true"
         if web.ctx.path.endswith('.json'):
             i.format = 'json'
-            i.high_priority = i.get("high_priority") == "true"
         return dynlinks.dynlinks(bib_keys=i.bibkeys.split(","), options=i)
 
 

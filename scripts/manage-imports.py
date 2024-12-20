@@ -7,7 +7,6 @@ import os
 import sys
 import time
 
-import _init_path  # Imported for its side effect of setting PYTHONPATH
 import web
 
 from openlibrary.api import OLError, OpenLibrary
@@ -158,7 +157,7 @@ def import_all(args, **kwargs):
     require_marc = not kwargs.get('no_marc', False)
 
     # Use multiprocessing to call do_import on each item
-    with multiprocessing.Pool(processes=10) as pool:
+    with multiprocessing.Pool(processes=8) as pool:
         while True:
             logger.info("find_pending START")
             items = ImportItem.find_pending()

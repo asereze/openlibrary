@@ -9,6 +9,9 @@ import {
     isValidLccn,
     isIdDupe
 } from './idValidation';
+import { init as initAutocomplete } from './autocomplete';
+import { init as initJqueryRepeat } from './jquery.repeat';
+
 /* global render_seed_field, render_language_field, render_lazy_work_preview, render_language_autocomplete_item, render_work_field, render_work_autocomplete_item */
 /* Globals are provided by the edit edition template */
 
@@ -68,6 +71,7 @@ function getJqueryElements(selector){
 }
 
 export function initRoleValidation() {
+    initJqueryRepeat();
     const dataConfig = JSON.parse(document.querySelector('#roles').dataset.config);
     $('#roles').repeat({
         vars: {prefix: 'edition--'},
@@ -227,14 +231,8 @@ export function validateIdentifiers(data) {
     return true;
 }
 
-export function initIdentifierValidation() {
-    $('#identifiers').repeat({
-        vars: {prefix: 'edition--'},
-        validate: function(data) {return validateIdentifiers(data)},
-    });
-}
-
 export function initClassificationValidation() {
+    initJqueryRepeat();
     const dataConfig = JSON.parse(document.querySelector('#classifications').dataset.config);
     $('#classifications').repeat({
         vars: {prefix: 'edition--'},
@@ -254,6 +252,7 @@ export function initClassificationValidation() {
 }
 
 export function initLanguageMultiInputAutocomplete() {
+    initAutocomplete();
     $(function() {
         getJqueryElements('.multi-input-autocomplete--language').forEach(jqueryElement => {
             jqueryElement.setup_multi_input_autocomplete(
@@ -272,6 +271,7 @@ export function initLanguageMultiInputAutocomplete() {
 }
 
 export function initWorksMultiInputAutocomplete() {
+    initAutocomplete();
     $(function() {
         getJqueryElements('.multi-input-autocomplete--works').forEach(jqueryElement => {
             /* Values in the html passed from Python code */
@@ -293,9 +293,15 @@ export function initWorksMultiInputAutocomplete() {
                 });
         });
     });
+
+    // Show the new work options checkboxes only if "New work" selected
+    $('input[name="works--0"]').on('autocompleteselect', function(_event, ui) {
+        $('.new-work-options').toggle(ui.item.key === '__new__');
+    });
 }
 
 export function initSeedsMultiInputAutocomplete() {
+    initAutocomplete();
     $(function() {
         getJqueryElements('.multi-input-autocomplete--seeds').forEach(jqueryElement => {
             /* Values in the html passed from Python code */
@@ -319,6 +325,7 @@ export function initSeedsMultiInputAutocomplete() {
 }
 
 export function initAuthorMultiInputAutocomplete() {
+    initAutocomplete();
     getJqueryElements('.multi-input-autocomplete--author').forEach(jqueryElement => {
         /* Values in the html passed from Python code */
         const dataConfig = JSON.parse(jqueryElement[0].dataset.config);
@@ -341,6 +348,7 @@ export function initAuthorMultiInputAutocomplete() {
 }
 
 export function initSubjectsAutocomplete() {
+    initAutocomplete();
     getJqueryElements('.csv-autocomplete--subjects').forEach(jqueryElement => {
         const dataConfig = JSON.parse(jqueryElement[0].dataset.config);
         jqueryElement.setup_csv_autocomplete(
@@ -387,16 +395,19 @@ function show_hide_title() {
 }
 
 export function initEditExcerpts() {
+    initJqueryRepeat();
     $('#excerpts').repeat({
         vars: {
             prefix: 'work--excerpts',
         },
         validate: function(data) {
+            const i18nStrings = JSON.parse(document.querySelector('#excerpts-errors').dataset.i18n);
+
             if (!data.excerpt) {
-                return error('#excerpts-errors', '#excerpts-excerpt', 'Please provide an excerpt.');
+                return error('#excerpts-errors', '#excerpts-excerpt', i18nStrings['empty_excerpt']);
             }
             if (data.excerpt.length > 2000) {
-                return error('#excerpts-errors', '#excerpts-excerpt', 'That excerpt is too long.')
+                return error('#excerpts-errors', '#excerpts-excerpt', i18nStrings['over_wordcount']);
             }
             $('#excerpts-errors').hide();
             $('#excerpts-excerpt').val('');
@@ -431,21 +442,31 @@ export function initEditExcerpts() {
  *    - '#link-errors'
  */
 export function initEditLinks() {
+    initJqueryRepeat();
     $('#links').repeat({
         vars: {
             prefix: $('#links').data('prefix')
         },
         validate: function(data) {
-            if (data.url.trim() === '' || data.url.trim() === 'https://') {
-                $('#link-errors').html('Please provide a URL.');
+            const i18nStrings = JSON.parse(document.querySelector('#link-errors').dataset.i18n);
+            const url = data.url.trim();
+
+            if (data.title.trim() === '') {
+                $('#link-errors').html(i18nStrings['empty_label']);
+                $('#link-errors').removeClass('hidden');
+                $('#link-label').trigger('focus');
+                return false;
+            }
+            if (url === '') {
+                $('#link-errors').html(i18nStrings['empty_url']);
                 $('#link-errors').removeClass('hidden');
                 $('#link-url').trigger('focus');
                 return false;
             }
-            if (data.title.trim() === '') {
-                $('#link-errors').html('Please provide a label.');
+            if (!isValidURL(url)) {
+                $('#link-errors').html(i18nStrings['invalid_url']);
                 $('#link-errors').removeClass('hidden');
-                $('#link-label').trigger('focus');
+                $('#link-url').trigger('focus');
                 return false;
             }
             $('#link-errors').addClass('hidden');
@@ -479,5 +500,18 @@ export function initEdit() {
             $(fieldname).trigger('focus');
             $(window).scrollTop($('#contentHead').offset().top);
         }, 1000);
+    }
+}
+
+/**
+ * Assesses URL validity using built-in URL object.
+ * @param string url
+ */
+function isValidURL(url) {
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return false;
     }
 }

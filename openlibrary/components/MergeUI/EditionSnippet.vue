@@ -1,6 +1,6 @@
 <template>
   <div class="edition-snippet">
-    <img :src="cover_url" />
+    <img loading="lazy" :src="cover_url" />
     <div class="links">
       <a :href="edition.key" target="_blank">OL</a>
       <a
@@ -106,13 +106,15 @@ export default {
   font-size: 0.95em;
 
   img {
-    height: 60px;
+    height: 100%;
     width: 60px;
     background: #eee;
     object-fit: cover;
     object-position: top center;
     float: left;
     margin-right: 7px;
+    // Min Height added for lazy loading so that the lazy loaded images are not 1 pixel and start having many books start loading
+    min-height: 80px;
     &:hover {
       object-fit: contain;
     }
